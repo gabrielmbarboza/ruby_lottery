@@ -1,4 +1,4 @@
-# research_thread_loto
+# Ruby Lottery
 Research about threads creation in ruby
 
 Execute the script:
