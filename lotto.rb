@@ -31,9 +31,9 @@ module Lotto
           file.truncate(0)
 
           years.each do |year|
-            loto_url = "https://asloterias.com.br/resultados-da-mega-sena-#{year}"
+            lotto_url = "https://asloterias.com.br/resultados-da-mega-sena-#{year}"
             agent = Mechanize.new
-            page = agent.get(loto_url)
+            page = agent.get(lotto_url)
             lotto_numbers = page.search('.dezenas_mega').each_slice(6).to_a
             
             lotto_numbers.each do |tens|
