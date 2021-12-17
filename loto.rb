@@ -1,19 +1,82 @@
-pool = []
-lucky_numbers = Hash.new(0)
+#!/usr/bin/env ruby
+require 'bundler/setup'
+require 'dry/cli'
+require 'date'
+require 'mechanize'
+require 'tty/spinner'
 
-File.foreach("loto.txt") do |line|
-  pool << Thread.new {
-    sleep(0.5)
-    l = line.split(" ")
+module Lotto
+  module CLI
+    module Commands
+      extend Dry::CLI::Registry
 
-    l.each do |n|
-      lucky_numbers[n] += 1
+      class Version < Dry::CLI::Command
+        desc "Print version"
+
+        def call(*)
+          puts "0.0.1"
+        end
+      end
+
+      class LoadTens < Dry::CLI::Command
+        desc "Load tens"
+  
+        def call(*)
+          spinner = TTY::Spinner.new("[:spinner] Loading tens...")
+          spinner.auto_spin
+          lotto_start_date = 1996
+          current_year = DateTime.now.year
+          years = (lotto_start_date..current_year).to_a
+          file = File.open("lotto.txt", "w")
+          file.truncate(0)
+
+          years.each do |year|
+            loto_url = "https://asloterias.com.br/resultados-da-mega-sena-#{year}"
+            agent = Mechanize.new
+            page = agent.get(loto_url)
+            lotto_numbers = page.search('.dezenas_mega').each_slice(6).to_a
+            
+            lotto_numbers.each do |tens|
+              parsed_tens = tens.map(&:children).join(' ')
+              file.puts(parsed_tens)
+            end
+          end
+          
+          file.close
+          spinner.success("(Tens loaded)")
+        end
+      end
+
+      class LuckyNumbers < Dry::CLI::Command
+        def call(*)
+          pool = []
+          lucky_numbers = Hash.new(0)
+          mutex = Mutex.new
+          File.foreach("lotto.txt") do |line|
+            pool << Thread.new {
+              mutex.synchronize {
+                tens = line.split(" ")
+
+                tens.each do |ten|
+                  lucky_numbers[ten] += 1
+                end
+              }
+            }
+          end
+
+          pool.each(&:join)
+
+          lucky_numbers.sort_by { |_key, value| value }.to_h.keys.each_slice(6) do |numbers|
+            puts numbers.sort { |a, b| a <=> b }.join(" ")
+          end
+        end
+      end
+
+      register "version", Version, aliases: ["v", "-v", "--version"]
+      register "load", LoadTens
+      register "lucky", LuckyNumbers
     end
-  }
+  end
 end
 
-pool.each{ |thr| thr.join }
-
-lucky_numbers.sort_by { |_key, value| value }.each do |key, value|
-  print "Number: #{key} Repetitions: #{value} \n"
-end
+Dry::CLI.new(Lotto::CLI::Commands).call
