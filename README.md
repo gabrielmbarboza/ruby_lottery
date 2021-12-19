@@ -8,4 +8,4 @@ Execute the script:
 
 ![Ruby lottery](https://i.imgur.com/Fz2oTrv.gif)
 
-**Disclaimer! This project is for study only, so the result is not reliable.**
+**Disclaimer! This project is for study only, so the result is not reliable.** :nerd_face:
