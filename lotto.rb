@@ -4,6 +4,7 @@ require 'dry/cli'
 require 'date'
 require 'mechanize'
 require 'tty/spinner'
+require 'yaml'
 
 module Lotto
   module CLI
@@ -14,7 +15,7 @@ module Lotto
         desc "Print version"
 
         def call(*)
-          puts "0.0.1"
+          puts "0.1.0"
         end
       end
 
@@ -29,11 +30,11 @@ module Lotto
           years = (lotto_start_date..current_year).to_a
           file = File.open("lotto.txt", "w")
           file.truncate(0)
-
+          
           years.each do |year|
-            lotto_url = "https://asloterias.com.br/resultados-da-mega-sena-#{year}"
+            loto_url = "https://asloterias.com.br/resultados-da-mega-sena-#{year}"
             agent = Mechanize.new
-            page = agent.get(lotto_url)
+            page = agent.get(loto_url)
             lotto_numbers = page.search('.dezenas_mega').each_slice(6).to_a
             
             lotto_numbers.each do |tens|
@@ -48,6 +49,8 @@ module Lotto
       end
 
       class LuckyNumbers < Dry::CLI::Command
+        desc "Show lucky numbers"
+        
         def call(*)
           pool = []
           lucky_numbers = Hash.new(0)
@@ -72,9 +75,30 @@ module Lotto
         end
       end
 
+      class RandomTens < Dry::CLI::Command
+        desc "Print random tens"
+
+        argument :games, desc: "Number of games you want"
+
+        def call(games: 1, **)
+          lucky_numbers = []
+
+          games.to_i.times do |chance|
+            tens = []
+            6.times { tens << rand(1..60) } 
+              lucky_numbers << tens.sort! { |a,b| a <=> b }
+            end
+
+            lucky_numbers.each do |tens| 
+              puts tens.map!{ |ten| ten.to_s.rjust(2, "0") }.join(" ") 
+          end
+        end
+      end
+
       register "version", Version, aliases: ["v", "-v", "--version"]
       register "load", LoadTens
       register "lucky", LuckyNumbers
+      register "random", RandomTens
     end
   end
 end
