@@ -15,7 +15,7 @@ module Lotto
         desc "Print version"
 
         def call(*)
-          puts "0.1.0"
+          puts "1.0.0"
         end
       end
 
@@ -82,15 +82,30 @@ module Lotto
 
         def call(games: 1, **)
           lucky_numbers = []
+          tens_per_game = 6
+          equal_random_tolerance = 3
+          first_ten = 1
+          last_ten = 60
 
           games.to_i.times do |chance|
             tens = []
-            6.times { tens << rand(1..60) } 
-              lucky_numbers << tens.sort! { |a,b| a <=> b }
-            end
+  
+            tens_per_game.times do
+              random_ten = rand(first_ten..last_ten)
 
-            lucky_numbers.each do |tens| 
-              puts tens.map!{ |ten| ten.to_s.rjust(2, "0") }.join(" ") 
+              equal_random_tolerance.times do
+                break unless tens.include?(random_ten)
+                random_ten = rand(first_ten..last_ten)
+              end
+
+              tens << random_ten
+            end 
+  
+            lucky_numbers << tens.sort! { |a, b| a <=> b }
+          end
+
+          lucky_numbers.each do |tens| 
+            puts tens.map!{ |ten| ten.to_s.rjust(2, "0") }.join(" ") 
           end
         end
       end
