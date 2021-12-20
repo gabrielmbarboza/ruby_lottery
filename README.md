@@ -4,8 +4,18 @@ This project presents lucky numbers (Numbers that were drawn most often) for the
 
 Execute the script:
 
-> ruby lotto.rb
+`$ ruby lotto.rb`
+
+```
+Commands:
+  lotto load                      # Load tens
+  lotto lucky                     # Show lucky numbers
+  lotto random [GAMES]            # Print random tens
+  lotto version                   # Print version
+
+```
 
 ![Ruby lottery](https://i.imgur.com/Fz2oTrv.gif)
 
 **Disclaimer! This project is for study only, so the result is not reliable.** :nerd_face:
+
