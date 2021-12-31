@@ -79,7 +79,7 @@ module Lotto
         desc "Print random tens"
 
         option :games, desc: "Number of games you want"
-        option :tens_per_game, default:"6", values: %w[6, 7, 8, 9], desc: "Number of tens you want"
+        option :tens_per_game, default:"6", values: %w[6, 7, 8, 9], desc: "Number of tens per game you want"
 
         def call(**options)
           lucky_numbers = []
