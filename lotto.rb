@@ -78,16 +78,18 @@ module Lotto
       class RandomTens < Dry::CLI::Command
         desc "Print random tens"
 
-        argument :games, desc: "Number of games you want"
+        option :games, desc: "Number of games you want"
+        option :tens_per_game, default:"6", values: %w[6, 7, 8, 9], desc: "Number of tens you want"
 
-        def call(games: 1, **)
+        def call(**options)
           lucky_numbers = []
-          tens_per_game = 6
           equal_random_tolerance = 3
+          games = options.fetch(:games).to_i
+          tens_per_game = options.fetch(:tens_per_game).to_i
           first_ten = 1
           last_ten = 60
 
-          games.to_i.times do |chance|
+          games.times do |chance|
             tens = []
   
             tens_per_game.times do
