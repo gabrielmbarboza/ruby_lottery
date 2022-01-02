@@ -50,17 +50,21 @@ module Lotto
 
       class LuckyNumbers < Dry::CLI::Command
         desc "Show lucky numbers"
+
+        option :tens, default:"6", values: %w[6, 7, 8, 9], desc: "Number of tens you want"
         
-        def call(*)
+        def call(**options)
           pool = []
           lucky_numbers = Hash.new(0)
           mutex = Mutex.new
+          tens_per_game = options.fetch(:tens).to_i
+
           File.foreach("lotto.txt") do |line|
             pool << Thread.new {
               mutex.synchronize {
-                tens = line.split(" ")
+                tens_line = line.split(" ")
 
-                tens.each do |ten|
+                tens_line.each do |ten|
                   lucky_numbers[ten] += 1
                 end
               }
@@ -69,8 +73,8 @@ module Lotto
 
           pool.each(&:join)
 
-          lucky_numbers.sort_by { |_key, value| value }.to_h.keys.each_slice(6) do |numbers|
-            puts numbers.sort { |a, b| a <=> b }.join(" ")
+          lucky_numbers.sort_by { |_key, value| value }.to_h.keys.each_slice(tens_per_game) do |numbers|
+            puts numbers.sort { |a, b| a <=> b }.join(" ") if numbers.length == tens_per_game 
           end
         end
       end
@@ -78,32 +82,32 @@ module Lotto
       class RandomTens < Dry::CLI::Command
         desc "Print random tens"
 
-        option :games, desc: "Number of games you want"
-        option :tens_per_game, default:"6", values: %w[6, 7, 8, 9], desc: "Number of tens per game you want"
+        option :games, default:"1", desc: "Number of games you want"
+        option :tens, default:"6", values: %w[6, 7, 8, 9], desc: "Number of tens you want"
 
         def call(**options)
           lucky_numbers = []
           equal_random_tolerance = 3
           games = options.fetch(:games).to_i
-          tens_per_game = options.fetch(:tens_per_game).to_i
+          tens_per_game = options.fetch(:tens).to_i
           first_ten = 1
           last_ten = 60
 
           games.times do |chance|
-            tens = []
+            tens_list = []
   
             tens_per_game.times do
               random_ten = rand(first_ten..last_ten)
 
               equal_random_tolerance.times do
-                break unless tens.include?(random_ten)
+                break unless tens_list.include?(random_ten)
                 random_ten = rand(first_ten..last_ten)
               end
 
-              tens << random_ten
+              tens_list << random_ten
             end 
   
-            lucky_numbers << tens.sort! { |a, b| a <=> b }
+            lucky_numbers << tens_list.sort! { |a, b| a <=> b }
           end
 
           lucky_numbers.each do |tens| 
