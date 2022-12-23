@@ -51,4 +51,4 @@ DEPENDENCIES
   tty-spinner (~> 0.9.3)
 
 BUNDLED WITH
-   1.17.3
+   2.3.26
